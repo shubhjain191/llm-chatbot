@@ -48,17 +48,17 @@ def display_sample_data(cursor):
     cursor.execute("SELECT * FROM customers ORDER BY customer_id")
     customers = cursor.fetchall()
     
-    print("Sample customer data:")
-    print("-" * 60)
-    print(f"{'ID':>3} | {'Name':<20} | {'Gender':<8} | {'Location':<12}")
-    print("-" * 60)
+    print("=== Customer Database Contents ===")
+    print("----------------------------------------")
+    print("ID  | Name                | Gender   | Location")
+    print("----------------------------------------")
     
     for customer in customers:
         customer_id, name, gender, location = customer
-        print(f"{customer_id:>3} | {name:<20} | {gender:<8} | {location:<12}")
+        print(f"{customer_id:3d} | {name:20} | {gender:8} | {location:12}")
     
-    print("-" * 60)
-    print(f"Total customers: {len(customers)}")
+    print("----------------------------------------")
+    print(f"Total Records: {len(customers)}")
 
 def location_summary(cursor):
     cursor.execute("""
@@ -72,19 +72,18 @@ def location_summary(cursor):
     
     locations = cursor.fetchall()
     
-    print("Customer distribution by location:")
-    print("-" * 50)
-    print(f"{'Location':<12} | {'Total':>5} | {'Male':>4} | {'Female':>6}")
-    print("-" * 50)
-    
+
+    print("=== Customer Location Report ===")
+    print("----------------------------------------")
+    print("Location     | Total | Male | Female")
+    print("----------------------------------------")
     for location, total, male, female in locations:
         print(f"{location:<12} | {total:>5} | {male:>4} | {female:>6}")
-    
-    print("-" * 50)
+    print("----------------------------------------")
 
 def main():
     print("Initializing LLM Chatbot Database...")
-    print("=" * 50)
+    print("----------------------------------------")
     
     try:
         conn, cursor = create_database()

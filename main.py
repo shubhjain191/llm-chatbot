@@ -15,18 +15,19 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="LLM-Powered Chatbot with SQL Integration")
+# Initialize FastAPI
+app = FastAPI(title="LLM-Powered Chatbot")
 
-# CORS middleware for React frontend
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
-# Initialize Groq client
+# Initialize Groq
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 # Database configuration
@@ -45,7 +46,7 @@ def init_database():
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
-    # Create customers table
+    # Customer table creation
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS customers (
             customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,7 +56,6 @@ def init_database():
         )
     """)
     
-    # Check if data already exists
     cursor.execute("SELECT COUNT(*) FROM customers")
     if cursor.fetchone()[0] == 0:
         # Insert sample data
@@ -92,10 +92,10 @@ Database schema:
 Rules:
 1. Only generate SELECT queries for safety
 2. Use proper SQL syntax for SQLite
-3. Return only the SQL query, no explanations
-4. Use LIKE for partial text matches
-5. Gender values are 'Male' or 'Female' (case-sensitive)
-6. Common locations: Mumbai, Pune, Indore, Germany, Singapore
+3. Common locations: Mumbai, Pune, Indore, Germany, Singapore
+4. Return only the SQL query
+5. Use LIKE for partial text matches
+6. Gender values are 'Male' or 'Female' (case-sensitive)
 
 Examples:
 - "Show me all female customers" → SELECT * FROM customers WHERE gender = 'Female'
@@ -111,7 +111,6 @@ Examples:
                 {"role": "user", "content": user_query}
             ],
             max_tokens=150,
-            temperature=0.1
         )
         
         sql_query = response.choices[0].message.content.strip()
@@ -124,7 +123,6 @@ Examples:
 
 def execute_sql_query(sql_query: str) -> list:
     """Execute SQL query and return results"""
-    # Basic security check - only allow SELECT queries
     if not sql_query.strip().upper().startswith('SELECT'):
         raise HTTPException(status_code=400, detail="Only SELECT queries are allowed")
     
@@ -136,7 +134,6 @@ def execute_sql_query(sql_query: str) -> list:
         columns = [description[0] for description in cursor.description]
         rows = cursor.fetchall()
         
-        # Convert to list of dictionaries
         results = []
         for row in rows:
             results.append(dict(zip(columns, row)))
@@ -159,7 +156,7 @@ async def startup_event():
 
 @app.get("/")
 async def root():
-    return {"message": "LLM-Powered Chatbot API is running"}
+    return {"message": "LLM-Powered Chatbot API is running....."}
 
 @app.post("/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
@@ -167,10 +164,8 @@ async def process_query(request: QueryRequest):
     try:
         logger.info(f"Incoming query: {request.query}")
         
-        # Generate SQL using LLM
         sql_query = get_llm_response(request.query)
         
-        # Execute SQL query
         results = execute_sql_query(sql_query)
         
         message = f"Found {len(results)} result(s)" if results else "No results found"
